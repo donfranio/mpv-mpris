@@ -7,6 +7,8 @@ BASE_LDFLAGS=`$(PKG_CONFIG) --libs gio-2.0 gio-unix-2.0 glib-2.0`
 
 SCRIPTS_DIR := $(HOME)/.config/mpv/scripts
 
+PKGLIST_FILE := debian-lib-packages
+
 mpris.so: mpris.c
 	$(CC) mpris.c -o mpris.so $(BASE_CFLAGS) $(CFLAGS) $(BASE_LDFLAGS) $(LDFLAGS) -shared -fPIC
 
@@ -15,3 +17,17 @@ install: mpris.so
 
 clean:
 	rm mpris.so
+
+uninstall:
+	rm $(SCRIPTS_DIR)/mpris.so
+
+add-debian-build-deps:
+	sudo apt -y install $(shell cat $(PKGLIST_FILE))
+
+rm-debian-build-deps:
+	sudo apt-mark auto $(shell cat $(PKGLIST_FILE))
+	sudo apt -y autoremove
+
+all-deb: add-debian-build-deps mpris.so rm-debian-build-deps install clean
+
+.PHONY: add-debian-build-deps rm-debian-build-deps
